@@ -17,16 +17,21 @@ def solve(nums):
     for pillar in nums:
         moves += abs(pillar - target)
 
-    moves /= 2
+    moves //= 2
 
-    print(moves)
+    print(f"The minimum number of moves is {moves}.\n")
 
 
 if __name__ == '__main__':
+    test_case_id = 1
     while True:
         if input() == '0':
             break
 
         nums = [x for x in map(lambda x: int(x), input().split())]
 
+        print(f"Set #{test_case_id}")
+
         solve(nums)
+
+        test_case_id += 1
