@@ -43,12 +43,12 @@ def get_copy(board: t_board):
 
 
 def get_completed_board() -> t_board:
-    return [
+    return get_copy([
         [1,  2,  3,  4 ],
         [5,  6,  7,  8 ],
         [9,  10, 11, 12],
         [13, 14, 15, 0 ],
-    ]
+    ])
 
 
 def is_solved(board: t_board):
@@ -111,6 +111,21 @@ def make_move(board: t_board, move: str):
     board[zero_y + dy][zero_x + dx] = 0
 
 
+def get_inverse_moves(moves: str):
+    INVERSED = {
+        'U': 'D',
+        'L': 'R',
+        'R': 'L',
+        'D': 'U',
+    }
+    inversed = ''
+    
+    for letter in moves:
+        inversed += INVERSED[letter]
+
+    return inversed
+
+
 def make_random_move(board: t_board):
     moves = get_moves(board)
 
@@ -132,9 +147,12 @@ def get_score(board: t_board, moves: int, target_board: t_board = get_completed_
             if board[y][x] == target_board[y][x]:
                 score -= 3
 
-            #dx = abs((board[y][x]-1) % 4 - x)
-            #dy = abs((board[y][x]-1) // 4 - y)
-            #score += dx + dy
+            cur_y, cur_x = divmod(board[y][x]-1, 4)
+            target_y, target_x = divmod(target_board[y][x]-1, 4)
+
+            dx = abs(cur_x - target_x)
+            dy = abs(cur_y - target_y)
+            score += dx + dy
     
     return score
 
@@ -143,45 +161,62 @@ def solve(board: t_board, target_board: t_board = get_completed_board()):
     normal_que = queue.PriorityQueue()
     reversed_que = queue.PriorityQueue()
 
-    normal_que.put((get_score(board, 0), (board, 0)))
-    reversed_que.put((get_score(target_board, 0, board), (target_board, 0)))
+    normal_que.put((get_score(board, 0), (board, '')))
+    reversed_que.put((get_score(target_board, 0, board), (target_board, '')))
 
-    normal_checked: dict[int, (t_board, int)] = {}
-    reversed_checked: dict[int, (t_board, int)] = {}
+    normal_checked: dict[int, (t_board, str)] = {}
+    reversed_checked: dict[int, (t_board, str)] = {}
+
+    normal_target = target_board
+    reversed_target = board
 
     for _ in range(1000000):
-        prio, (board, performed_moves) = normal_que.get(False)
+        for que, same_checked, opposite_checked, target in (
+                (normal_que, normal_checked, reversed_checked, normal_target), 
+                (reversed_que, reversed_checked, normal_checked, reversed_target)
+            ):
+            prio, (board, performed_moves) = que.get(False)
 
-        if is_solved(board):
-            print(f"solved in {performed_moves} moves")
-            print(normal_que.qsize())
-            return
-        
-        available_moves = get_moves(board)
-        performed_moves += 1
+            """if is_solved(board):
+                print(f"solved in {performed_moves} moves")
+                print(normal_que.qsize())
+                return"""
 
-        MAX_MOVES = 50
-        if performed_moves > MAX_MOVES:
-            continue
+            hashed_board = get_hash(board)
+            if hashed_board in opposite_checked.keys():
+                if normal_checked == same_checked:
+                    solution = performed_moves + get_inverse_moves(opposite_checked[hashed_board][1][::-1])
+                else:
+                    solution = opposite_checked[hashed_board][1] + get_inverse_moves(performed_moves[::-1])
 
-        for available_move in available_moves:
-            new_board = get_copy(board)
-            make_move(new_board, available_move)
+                print(f"Board solved in {len(solution)} moves")
+                print(f"{solution}")
+                return
+            
+            available_moves = get_moves(board)
 
-            hashed_board = get_hash(new_board)
-            if hashed_board in normal_checked.keys() and performed_moves >= normal_checked[hashed_board][1]:
+            MAX_MOVES = 50
+            if len(performed_moves)+1 > MAX_MOVES // 2:
                 continue
-            else:
-                normal_checked[hashed_board] = (new_board, performed_moves)
 
-            normal_que.put((get_score(new_board, performed_moves), (new_board, performed_moves)))
+            for available_move in available_moves:
+                new_board = get_copy(board)
+                make_move(new_board, available_move)
 
+                hashed_board = get_hash(new_board)
+                if hashed_board in same_checked.keys() and len(performed_moves)+1 >= len(same_checked[hashed_board][1]):
+                    continue
+                else:
+                    same_checked[hashed_board] = (new_board, performed_moves + available_move)
+
+                que.put((get_score(new_board, len(performed_moves)+1), (new_board, performed_moves + available_move)))
+
+        
     print(normal_que.get(False)[1])
 
 
 if __name__ == '__main__':
     board = get_completed_board()
-    randomize_board(board)
     board = [
         [ 2,  0,  3,  4 ],
         [ 1,  7, 10, 15 ],
@@ -194,10 +229,22 @@ if __name__ == '__main__':
         [ 9, 12, 11,  0 ],
         [13,  6, 14,  8 ],
     ]
+    board = [
+        [ 5,  3,  2,  1 ],
+        [12,  9, 10,  7 ],
+        [13, 11,  0,  4 ],
+        [ 6,  8, 14, 15 ],
+    ]
+    randomize_board(board)
+    board = [
+        [ 5,  0,  9,  1 ],
+        [ 2,  7,  3,  4 ],
+        [12, 11, 14, 10 ],
+        [13,  6,  8, 15 ],
+    ] 
+
     print_board(board)
 
     start_time = time.time()
-    solve(board)
-    make_move(board, 'D')
     solve(board)
     print(time.time() - start_time)
