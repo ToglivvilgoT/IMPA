@@ -26,9 +26,13 @@ def print_dict(dic: dict):
         print(f'{key} = {dic[key]}')
 
 
-if __name__ == '__main__':
+def main():
     test_cases = get_input()
 
     for i in range(len(test_cases)):
         print(f'Case {i+1}')
         print_dict(solve(test_cases[i]))
+
+
+if __name__ == '__main__':
+    main()
