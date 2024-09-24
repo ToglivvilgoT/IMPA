@@ -105,11 +105,20 @@ class TestPrintDict(unittest.TestCase):
 
 
 class TestMain(unittest.TestCase):
-    @patch('sys.stdin', new_callable=io.StringIO)
     @patch('sys.stdout', new_callable=io.StringIO)
+    @patch('sys.stdin', new_callable=io.StringIO)
     def test_example(self, mock_stdin: io.StringIO, mock_stdout: io.StringIO):
-        pass
-    # continue here pls ^^
+        inp = '2\nAEFFGGEBDDCCBA\nZAABBZ\n'
+        expected = 'Case 1\nA = 2\nB = 3\nC = 1\nD = 1\nE = 3\nF = 1\nG = 1\nCase 2\nA = 1\nB = 1\nZ = 2\n'
+
+        mock_stdin.write(inp)
+        mock_stdin.seek(0)
+
+        WeddingofSultan_12582.main()
+
+        result = mock_stdout.getvalue()
+
+        self.assertEqual(expected, result)
 
 
 if __name__ == '__main__':
