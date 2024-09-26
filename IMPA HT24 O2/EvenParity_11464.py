@@ -1,3 +1,40 @@
+import sys
+
+
+def matrix_to_int(grid_matrix: list[list[int]], width):
+    """ converts a matrix represented grid to an integer representation """
+    grid_int = 0
+
+    for y in range(width):
+        for x in range(width):
+            grid_int += grid_matrix[y][x] * 2**x * 2**(3*y)
+
+    return grid_int
+
+
+def get_input():
+    """
+    reads input and returns it as a list of test cases
+    where each test case is a tuple containing grid and width
+    """
+    test_cases: list[tuple[int, int]] = []
+
+    inp = sys.stdin.read().splitlines()
+
+    i = 1
+    while i < len(inp):
+        width = int(inp[i])
+
+        grid_matrix = []
+        for i in range(i + 1, i + 1 + width):
+            grid_matrix.append([int(n) for n in inp[i].split()])
+
+        test_cases.append((matrix_to_int(grid_matrix, width), width))
+
+        i += 1
+
+    return test_cases
+
 
 
 def is_inbound(x: int, y: int, width: int):
@@ -49,7 +86,7 @@ def solve(grid: int, width: int):
     next_grids = [grid]
 
     MAX_WIDTH = 15
-    for depth in range(1, MAX_WIDTH**2+1):
+    for depth in range(MAX_WIDTH**2):
         current_grids = next_grids
         next_grids = []
 
@@ -63,7 +100,18 @@ def solve(grid: int, width: int):
             else:
                 for next_grid in result:
                     next_grids.append(next_grid)
+    
+    return -1
+
+
+def main():
+    inps = get_input()
+
+    for i in range(len(inps)):
+        grid, width = inps[i]
+
+        print(f'Case {i+1}: {solve(grid, width)}')
 
 
 if __name__ == '__main__':
-    print(solve(0b000100000, 3))
+    main()

@@ -1,8 +1,112 @@
 import io
 import sys
 import unittest
+from unittest.mock import patch
 
 import EvenParity_11464
+
+
+class TestMatrixToInt(unittest.TestCase):
+    def test_empty(self):
+        inp = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+        ]
+        expected = 0b000000000
+        result = EvenParity_11464.matrix_to_int(inp, len(inp))
+
+        self.assertEqual(expected, result)
+
+    def test_one_grid(self):
+        inp = [
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 0, 0],
+        ]
+        expected = 0b000001000
+        result = EvenParity_11464.matrix_to_int(inp, len(inp))
+
+        self.assertEqual(expected, result)
+
+    def test_impossible_grid(self):
+        inp = [
+            [1, 1, 1],
+            [1, 1, 1],
+            [0, 0, 0],
+        ]
+        expected = 0b000111111
+        result = EvenParity_11464.matrix_to_int(inp, len(inp))
+
+        self.assertEqual(expected, result)
+
+
+class TestGetInput(unittest.TestCase):
+    @patch('sys.stdin', new_callable=io.StringIO)
+    def test_empty(self, mock_stdin: io.StringIO):
+        inp = '1\n3\n0 0 0\n0 0 0\n0 0 0'
+        expected = [(0b000000000, 3)]
+
+        mock_stdin.write(inp)
+        mock_stdin.seek(0)
+
+        result = EvenParity_11464.get_input()
+
+        self.assertEqual(expected, result)
+
+    @patch('sys.stdin', new_callable=io.StringIO)
+    def test_one_grid(self, mock_stdin: io.StringIO):
+        inp = '1\n3\n0 0 0\n1 0 0\n0 0 0'
+        expected = [(0b000001000, 3)]
+
+        mock_stdin.write(inp)
+        mock_stdin.seek(0)
+
+        result = EvenParity_11464.get_input()
+
+        self.assertEqual(expected, result)
+
+    @patch('sys.stdin', new_callable=io.StringIO)
+    def test_impossible_grid(self, mock_stdin: io.StringIO):
+        inp = '1\n3\n1 1 1\n1 1 1\n0 0 0'
+        expected = [(0b000111111, 3)]
+
+        mock_stdin.write(inp)
+        mock_stdin.seek(0)
+
+        result = EvenParity_11464.get_input()
+
+        self.assertEqual(expected, result)
+
+    @patch('sys.stdin', new_callable=io.StringIO)
+    def test_example_input(self, mock_stdin: io.StringIO):
+        inp = '' + \
+            '3\n' + \
+            '3\n' + \
+            '0 0 0\n' + \
+            '0 0 0\n' + \
+            '0 0 0\n' + \
+            '3\n' + \
+            '0 0 0\n' + \
+            '1 0 0\n' + \
+            '0 0 0\n' + \
+            '3\n' + \
+            '1 1 1\n' + \
+            '1 1 1\n' + \
+            '0 0 0\n' + \
+            ''
+        expected = [
+            (0b000000000, 3),
+            (0b000001000, 3),
+            (0b000111111, 3),
+        ]
+
+        mock_stdin.write(inp)
+        mock_stdin.seek(0)
+
+        result = EvenParity_11464.get_input()
+
+        self.assertEqual(expected, result)
 
 
 class TestInbounds(unittest.TestCase):
@@ -137,7 +241,64 @@ class TestCheckGrid(unittest.TestCase):
 
 class TestSolve(unittest.TestCase):
     """ Tests the solve() function """
-    #pls do that now pls
+
+    def test_empty(self):
+        inp = 0b000000000
+        width = 3
+        expected = 0
+        result = EvenParity_11464.solve(inp, width)
+
+        self.assertEqual(expected, result)
+
+    def test_completeble(self):
+        inp = 0b000001000
+        width = 3
+        expected = 3
+        result = EvenParity_11464.solve(inp, width)
+
+        self.assertEqual(expected, result)
+
+    def test_empty(self):
+        inp = 0b000111111
+        width = 3
+        expected = -1
+        result = EvenParity_11464.solve(inp, width)
+
+        self.assertEqual(expected, result)
+
+
+class TestMain(unittest.TestCase):
+    @patch('sys.stdout', new_callable=io.StringIO)
+    @patch('sys.stdin', new_callable=io.StringIO)
+    def test_example(self, mock_stdin: io.StringIO, mock_stdout: io.StringIO):
+        inp = \
+            '3\n' + \
+            '3\n' + \
+            '0 0 0\n' + \
+            '0 0 0\n' + \
+            '0 0 0\n' + \
+            '3\n' + \
+            '0 0 0\n' + \
+            '1 0 0\n' + \
+            '0 0 0\n' + \
+            '3\n' + \
+            '1 1 1\n' + \
+            '1 1 1\n' + \
+            '0 0 0\n'
+        
+        expected = \
+            'Case 1: 0\n' + \
+            'Case 2: 3\n' + \
+            'Case 3: -1\n'
+        
+        mock_stdin.write(inp)
+        mock_stdin.seek(0)
+
+        EvenParity_11464.main()
+
+        result = mock_stdout.getvalue()
+
+        self.assertEqual(expected, result)
         
 
 
