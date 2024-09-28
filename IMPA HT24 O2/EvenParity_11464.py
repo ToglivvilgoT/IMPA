@@ -83,12 +83,12 @@ def check_grid(grid: int, width: int):
 
 
 def solve(grid: int, width: int):
-    next_grids = [grid]
+    next_grids = {grid}
 
     MAX_WIDTH = 15
     for depth in range(MAX_WIDTH**2):
         current_grids = next_grids
-        next_grids = []
+        next_grids = set()
 
         for current_grid in current_grids:
             result = check_grid(current_grid, width)
@@ -99,7 +99,7 @@ def solve(grid: int, width: int):
                 
             else:
                 for next_grid in result:
-                    next_grids.append(next_grid)
+                    next_grids.add(next_grid)
     
     return -1
 
